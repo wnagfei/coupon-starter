@@ -1,0 +1,34 @@
+{
+  "groups": [
+    {
+      "name": "coupons.client",
+      "type": "com.cbs.springboot.service.CouponsProperties",
+      "sourceType": "com.cbs.springboot.service.CouponsProperties"
+    },
+    {
+      "name": "spring.cloud.stream.kafka.binder",
+      "type": "com.cbs.springboot.bean.StreamBean",
+      "sourceType": "com.cbs.springboot.bean.StreamBean"
+    }
+  ],
+  "properties": [
+    {
+      "name": "coupons.client.send-uri",
+      "type": "java.lang.String",
+      "sourceType": "com.cbs.springboot.service.CouponsProperties",
+      "defaultValue": "http:\/\/equity\/imCouponsInfo\/v1\/send"
+    },
+    {
+      "name": "coupons.client.use-uri",
+      "type": "java.lang.String",
+      "sourceType": "com.cbs.springboot.service.CouponsProperties",
+      "defaultValue": "http:\/\/equity\/imCouponsInfo\/v1\/use"
+    },
+    {
+      "name": "spring.cloud.stream.kafka.binder.brokers-batch",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "com.cbs.springboot.bean.StreamBean"
+    }
+  ],
+  "hints": []
+}

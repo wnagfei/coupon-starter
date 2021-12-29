@@ -1,0 +1,8 @@
+com\cbs\springboot\bean\ThreadLocalPool.class
+com\cbs\springboot\bean\StreamsVo.class
+com\cbs\springboot\bean\StreamBean.class
+com\cbs\springboot\bean\ReportEnum.class
+com\cbs\springboot\configure\CouponAutoConfigure$1.class
+com\cbs\springboot\bean\CoupousBean$SimpleBean.class
+com\cbs\springboot\bean\TargetBean.class
+com\cbs\springboot\bean\StatusEnum.class
