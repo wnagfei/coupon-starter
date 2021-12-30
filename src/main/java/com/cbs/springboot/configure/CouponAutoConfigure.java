@@ -1,10 +1,12 @@
 package com.cbs.springboot.configure;
 
+//import com.cbs.springboot.annotion.CacheItemGetAspect;
 import com.cbs.springboot.annotion.CouponsAspect;
 import com.cbs.springboot.bean.StreamBean;
 import com.cbs.springboot.kafka.CouponStream;
 import com.cbs.springboot.service.CouponService;
 import com.cbs.springboot.service.impl.CouponServiceImpl;
+import com.cbs.springboot.tempAspectJ.CacheMapPutAspect;
 import java.util.List;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -61,9 +63,25 @@ public class CouponAutoConfigure {
   }
 
   @Bean
+  public CouponPostProcessor getCouponPostProcessor() {
+    return new CouponPostProcessor();
+  }
+  @Bean
   @ConditionalOnMissingBean(CouponsAspect.class)
   public CouponsAspect getAspectJ() {
     return new CouponsAspect();
+  }
+
+//  @Bean
+//  @ConditionalOnMissingBean(CacheItemGetAspect.class)
+//  public CacheItemGetAspect getCacheItemGetAspect() {
+//    return new CacheItemGetAspect();
+//  }
+
+  @Bean
+  @ConditionalOnMissingBean(CacheMapPutAspect.class)
+  public CacheMapPutAspect getCacheMapPutAspect() {
+    return new CacheMapPutAspect();
   }
 
   @Bean

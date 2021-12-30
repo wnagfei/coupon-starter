@@ -1,5 +1,6 @@
 package com.cbs.springboot.annotion;
 
+import static java.lang.Enum.valueOf;
 import static org.apache.logging.log4j.message.MapMessage.MapFormat.JSON;
 
 import com.cbs.springboot.bean.StatusEnum;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
@@ -53,10 +60,19 @@ public class CouponsAspect {
       Method method = signature.getMethod();
       Coupons coupons = method.getAnnotation(Coupons.class);
 
-      if (StringUtils.isEmpty(coupons.name()) && StringUtils.isEmpty(coupons.value())) {
+      if (StringUtils.isEmpty(coupons.name()) && StringUtils.isEmpty(coupons.name())) {
         log.info("优惠券发放业务不能为空");
         return null;
       }
+      List<String> targetCodes = null;
+      if (coupons.targetCode() != null) {
+
+        targetCodes = getTargetCodes(coupons.targetCode(), method, point.getArgs());
+        if (targetCodes==null){
+          targetCodes = new ArrayList<>();
+        }
+      }
+
       // 判断如果返回成功
       if (!ObjectUtils.isEmpty(result)) {
         HashMap jsonObject =
@@ -67,7 +83,15 @@ public class CouponsAspect {
         }
         // 判断是否可以发放优惠券
         if (canSend) {
+          String s = ThreadLocalPool.targetThreadLocal.get();
           CoupousBean coupousBean = ThreadLocalPool.threadLocal.get();
+          if (null==coupousBean){
+            coupousBean = new CoupousBean();
+          }
+          if (targetCodes!=null){
+            targetCodes.add(s);
+            coupousBean.setTargetCodes(targetCodes);
+          }
           coupousBean.setPoint(coupons.name());
           log.info("CouponsAspect处理发放优惠券入参：{}", objectMapper.writeValueAsString(coupousBean));
           sendMsg(StatusEnum.STREAM_DATA, coupousBean);
@@ -106,4 +130,38 @@ public class CouponsAspect {
       log.error("coupons->sendMsg,id={} 失败,msg={}", type, svo.toString());
     }
   }
+  public List<String> getTargetCodes(String targetCodeSpe,Method method,Object[] args){
+    LocalVariableTableParameterNameDiscoverer localVariableTable = new LocalVariableTableParameterNameDiscoverer();
+    String[] paraNameArr = localVariableTable.getParameterNames(method);
+    //使用SPEL进行key的解析
+    ExpressionParser parser = new SpelExpressionParser();
+    //SPEL上下文
+    StandardEvaluationContext context = new StandardEvaluationContext();
+    //把方法参数放入SPEL上下文中
+    for(int i=0;i<paraNameArr.length;i++) {
+      context.setVariable(paraNameArr[i], args[i]);
+    }
+    String target = null;
+    // 使用变量方式传入业务动态数据
+    if(targetCodeSpe.matches("^#.*.$")) {
+      target = parser.parseExpression(targetCodeSpe).getValue(context, String.class);
+      if (!StringUtils.isEmpty(target)){
+        String[] split = target.split(",");
+        return  Arrays.asList(split);
+      }
+    }
+    return null;
+  }
+//  @Around(value = "@annotation(com.cbs.springboot.annotion.CouponsTarget)")
+//  public Object doAroud(ProceedingJoinPoint point) {
+//    try {
+//      ThreadLocalPool.targetThreadLocal.set("46541521");
+//      return point.proceed();
+//    } catch (Exception e) {
+//      log.warn("发送切面处理异常");
+//      return null;
+//    } finally {
+//      return null;
+//    }
+//  }
 }

@@ -17,13 +17,11 @@ public @interface Coupons {
    * 触发业务
    * 触发行为;0不限 1注册 2实名 3入司 4加入企微 5会员升级 6出单 7邀新
    */
-  @AliasFor("name")
-  String value() default "";
-
-  @AliasFor("value")
   String name() default "";
   //平台编码
   String platformCode() default "";
+  //发送给某人以逗号隔开
+  String targetCode() default "";
 
   /**
    * 调用的方法名称
